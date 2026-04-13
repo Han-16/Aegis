@@ -4,13 +4,13 @@ use ark_ff::Zero;
 use ark_r1cs_std::eq::EqGadget;
 use ark_r1cs_std::{
     alloc::AllocVar,
-    bits::ToBitsGadget,
+    convert::ToBitsGadget,
     fields::{fp::FpVar, FieldVar},
     prelude::Boolean,
 };
 use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
 use rand::{CryptoRng, RngCore};
-use rayon::prelude::*; // Add this line
+use rayon::prelude::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Write;
