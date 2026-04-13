@@ -4,7 +4,6 @@ use ark_ff::Zero;
 use ark_r1cs_std::eq::EqGadget;
 use ark_r1cs_std::{
     alloc::AllocVar,
-    convert::ToBitsGadget,
     fields::{fp::FpVar, FieldVar},
     prelude::Boolean,
 };
@@ -129,8 +128,9 @@ impl<C: CurveGroup> ConstraintSynthesizer<C::ScalarField> for AegisCircuit<C> {
             sum += delta[0].clone();
             delta_commitments.push(delta);
 
+            let (curr_bits_64, _) = curr[0].to_bits_le_with_top_bits_zero(64)?;
             Boolean::enforce_smaller_or_equal_than_le(
-                curr[0].to_non_unique_bits_le().unwrap().as_slice(),
+                curr_bits_64.as_slice(),
                 constant_max.into_bigint(),
             )?;
         }
