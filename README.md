@@ -33,15 +33,15 @@
 ### 1. Clone & Install
 ```bash
 git clone https://github.com/snp-labs/Aegis.git
-cd aegis
+cd Aegis
 ```
 
 ### 2. Environment Setup
-Before running circuit tests, copy the example environment file:
+Before running circuit tests, copy the circuit environment file:
 ```bash
-cp env.example .env
+cp aegis_circuit/.env.example aegis_circuit/.env
 ```
-Make sure to adjust any required values in .env according to your setup.
+Adjust values in `aegis_circuit/.env` as needed.
 
 
 ### 3. Circuit Tests
@@ -49,21 +49,46 @@ Make sure to adjust any required values in .env according to your setup.
 cd aegis_circuit/src/tests
 sh run_tests.sh
 ```
-- This file includes detailed performance metrics, such as:
-  - Number of Constraints
-  - Setup time
-  - Proving time
-  - Aggregate time
-  - Verify time
-  - Performance across different batch sizes and thread counts
-- Results are stored in `circuit_result.txt`
+- Generated outputs:
+  - `aegis_circuit/src/tests/circuit_result.csv`
+    - columns: `thread,batch_size,constraints,setup,commit,prover,aggregate,verifier`
+  - `aegis_contract/result/dbtData.batch_<N>.json`
+    - per-batch contract test artifact (vk/ck/proof/cm/prevCm)
 
 ### 4. Smart Contract Tests
-Before running contract tests, make sure you have run Circuit Tests (Step 3).
-Circuit tests generate scenario data required for the contracts (`aegis_contract/result/dbtData.ts`)
+Install dependencies:
 ```bash
 cd aegis_contract
 npm install
-npx hardhat test
 ```
-- Tests will fall if `dbtData.ts` is missing
+
+#### 4.1 Functional contract tests (`test/Aegis.ts`)
+Requires matching JSON artifact from Step 3.
+
+Example (batch 1024):
+```bash
+AEGIS_BATCH=1024 npx hardhat test test/Aegis.ts
+```
+
+#### 4.2 Verify performance benchmark (`test/Aegis.verify.perf.ts`)
+Runs verify benchmark across generated `dbtData.batch_*.json` artifacts.
+
+```bash
+npx hardhat test test/Aegis.verify.perf.ts
+```
+
+Optional filters:
+```bash
+BATCHES=64,128,256 VERIFY_ITERS=3 MAX_VERIFY_BATCH=4096 npx hardhat test test/Aegis.verify.perf.ts
+```
+
+Benchmark output:
+- Console: average verify time + gas per batch
+- File: `aegis_contract/result/verify_perf.csv`
+
+### 5. Optional: Enable gas reporter
+Gas reporter is disabled by default and enabled only when requested.
+
+```bash
+REPORT_GAS=true npx hardhat test
+```
