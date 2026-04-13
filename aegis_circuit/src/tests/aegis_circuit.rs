@@ -10,8 +10,7 @@ use ark_r1cs_std::{
 use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError};
 use rand::{CryptoRng, RngCore};
 use rayon::prelude::*;
-use std::fs::File;
-use std::fs::OpenOptions;
+use std::fs::{create_dir_all, File, OpenOptions};
 use std::io::Write;
 use std::time::Instant;
 
@@ -278,28 +277,27 @@ fn aegis_circuit_solidity<E: Pairing>(
     E::G2Affine: Solidity,
     E::ScalarField: Solidity,
 {
-    let mut file =
-        File::create("../aegis_contract/result/dbtData.ts").expect("Unable to create file");
+    let result_dir = "../aegis_contract/result";
+    create_dir_all(result_dir).expect("Unable to create result directory");
+    let output_path = format!("{}/dbtData.batch_{}.json", result_dir, batch_size);
+    let mut file = File::create(output_path).expect("Unable to create json file");
 
-    writeln!(file, "const batchSize = {}", batch_size).unwrap();
-    writeln!(file, "const vk = {:?}", vk.to_solidity()).unwrap();
-    writeln!(file, "const ck = {:?}", vk.ck.batch_g1.to_solidity()).unwrap();
-    writeln!(
-        file,
-        "const cm = {:?}",
-        vec![cm[batch_size], cm[batch_size + 1]].to_solidity()
+    let payload = serde_json::json!({
+        "batchSize": batch_size,
+        "vk": vk.to_solidity(),
+        "ck": vk.ck.batch_g1.to_solidity(),
+        "dbt": {
+            "cm": vec![cm[batch_size], cm[batch_size + 1]].to_solidity(),
+            "proof": proof.to_solidity()
+        },
+        "prevCm": prev_cm[0].to_solidity()
+    });
+    file.write_all(
+        serde_json::to_string_pretty(&payload)
+            .expect("Unable to serialize json")
+            .as_bytes(),
     )
-    .unwrap();
-    writeln!(file, "const prevCm = {:?}", prev_cm[0].to_solidity()).unwrap();
-    writeln!(file, "const proof = {:?}", proof.to_solidity()).unwrap();
-    writeln!(file, "const dbt = {{ cm: cm, proof: proof }}").unwrap();
-    writeln!(
-        file,
-        "\nconst batch{} = {{ batchSize, vk, ck, dbt, prevCm }}",
-        batch_size
-    )
-    .unwrap();
-    writeln!(file, "\nexport default batch{}\n", batch_size).unwrap();
+    .expect("Unable to write json file");
 }
 
 pub mod bn254 {
