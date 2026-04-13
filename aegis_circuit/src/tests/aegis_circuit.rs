@@ -24,6 +24,7 @@ use crate::{
     },
     gro::{CCGroth16, Commitment, CommittingKey, Proof, ProvingKey, VerifyingKey},
     snark::{CircuitSpecificSetupCCSNARK, CCSNARK},
+    utils::format_duration_2dp,
 };
 
 fn test_delta_commitment<F: PrimeField>(num_commitments: usize, length: usize) -> Vec<Vec<F>> {
@@ -235,7 +236,7 @@ fn aegis_circuit_prove_and_verify<E: Pairing, R: RngCore + CryptoRng>(
     let (aggregation_g1, _) = Pedersen::<E::G1>::aggregate(commitments, tau, None);
     end_timer!(aggregate_timer);
     let aggregate_time = aggregate_start.elapsed();
-    writeln!(file, "Aggregate: {:?}", aggregate_time).unwrap();
+    writeln!(file, "Aggregate: {}", format_duration_2dp(aggregate_time)).unwrap();
 
     let mut verify = proof.clone();
     let aggregation = aggregation_g1.into_group();

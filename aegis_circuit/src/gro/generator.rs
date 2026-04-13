@@ -1,4 +1,5 @@
 use super::{r1cs_to_qap::R1CSToQAP, CCGroth16, CommittingKey, ProvingKey, VerifyingKey};
+use crate::utils::format_duration_2dp;
 use ark_ec::{pairing::Pairing, scalar_mul::BatchMulPreprocessing, CurveGroup};
 use ark_ff::{Field, PrimeField, UniformRand, Zero};
 use ark_poly::{EvaluationDomain, GeneralEvaluationDomain};
@@ -248,16 +249,17 @@ impl<E: Pairing, QAP: R1CSToQAP> CCGroth16<E, QAP> {
         end_timer!(batch_normalization_time);
 
         let setup_elapsed = setup_start.elapsed();
+        let setup_elapsed_fmt = format_duration_2dp(setup_elapsed);
         end_timer!(setup_time);
 
-        println!("Setup: {:?}\n", setup_elapsed);
+        println!("Setup: {}\n", setup_elapsed_fmt);
         let mut file = OpenOptions::new()
             .write(true)
             .append(true)
             .create(true)
             .open("./src/tests/circuit_result.txt")
             .unwrap();
-        writeln!(file, "Setup: {:?}", setup_elapsed).unwrap();
+        writeln!(file, "Setup: {}", setup_elapsed_fmt).unwrap();
         Ok(ProvingKey {
             vk,
             beta_g1: beta_g1.into_affine(),
