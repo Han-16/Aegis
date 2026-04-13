@@ -8,8 +8,6 @@ use ark_relations::r1cs::{
     SynthesisError, SynthesisMode,
 };
 use ark_std::{cfg_into_iter, cfg_iter, rand::Rng, vec::Vec};
-use std::fs::OpenOptions;
-use std::io::Write;
 use std::time::Instant;
 
 #[cfg(feature = "parallel")]
@@ -253,13 +251,6 @@ impl<E: Pairing, QAP: R1CSToQAP> CCGroth16<E, QAP> {
         end_timer!(setup_time);
 
         println!("Setup: {}\n", setup_elapsed_fmt);
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .create(true)
-            .open("./src/tests/circuit_result.txt")
-            .unwrap();
-        writeln!(file, "Setup: {}", setup_elapsed_fmt).unwrap();
         Ok(ProvingKey {
             vk,
             beta_g1: beta_g1.into_affine(),

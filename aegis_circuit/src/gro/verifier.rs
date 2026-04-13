@@ -5,8 +5,6 @@ use crate::utils::format_duration_2dp;
 use core::ops::{AddAssign, Neg};
 
 use super::{r1cs_to_qap::R1CSToQAP, CCGroth16, PreparedVerifyingKey, Proof, VerifyingKey};
-use std::fs::OpenOptions;
-use std::io::Write;
 use std::time::Instant;
 
 /// Prepare the verifying key `vk` for use in proof verification.
@@ -85,13 +83,6 @@ impl<E: Pairing, QAP: R1CSToQAP> CCGroth16<E, QAP> {
         let verifier_time = verifier_start.elapsed();
         let verifier_time_fmt = format_duration_2dp(verifier_time);
         println!("Verifier: {}", verifier_time_fmt);
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .create(true)
-            .open("./src/tests/circuit_result.txt")
-            .unwrap();
-        writeln!(file, "Verifier: {}\n", verifier_time_fmt).unwrap();
         result
     }
 }
