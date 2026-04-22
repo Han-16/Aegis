@@ -1,6 +1,6 @@
 use ark_serialize::CanonicalSerialize;
 use dotenv::dotenv;
-use std::{env, str::FromStr};
+use std::{env, str::FromStr, time::Duration};
 
 pub trait Average<T> {
     fn average(&self) -> T;
@@ -28,14 +28,11 @@ impl<T: Clone> Transpose<Vec<T>> for Vec<T> {
 }
 
 pub fn format_time(microseconds: u128) -> String {
-    if microseconds >= 1_000_000 {
-        let seconds = microseconds as f64 / 1_000_000.0;
-        format!("{:.3} s", seconds)
-    } else if microseconds >= 1_000 {
-        let milliseconds = microseconds as f64 / 1_000.0;
-        format!("{:.3} ms", milliseconds)
+    let ms = microseconds as f64 / 1_000.0;
+    if ms >= 1_000.0 {
+        format!("{:.2} s", ms / 1_000.0)
     } else {
-        format!("{} µs", microseconds)
+        format!("{:.2} ms", ms)
     }
 }
 
@@ -49,4 +46,8 @@ pub fn compressed_key_size<K: CanonicalSerialize>(key: &K) -> usize {
     let mut buffer = vec![];
     key.serialize_compressed(&mut buffer).unwrap();
     buffer.len()
+}
+
+pub fn format_duration_s_2dp(duration: Duration) -> String {
+    format!("{:.2} s", duration.as_secs_f64())
 }

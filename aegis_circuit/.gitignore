@@ -48,3 +48,5 @@ logs/*
 src/keys
 .DS_Store
 /src/tests/.DS_Store
+src/tests/circuit_result.csv
+src/tests/circuit_result.thread_*.csv
